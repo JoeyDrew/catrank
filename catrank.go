@@ -44,7 +44,13 @@ func main() {
 	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "POST" {
+		switch r.Method {
+		case "GET":
+			err := indexTemplate.Execute(w, cats)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+		case "POST":
 			catIndexStr := r.FormValue("cat")
 			catIndex, err := strconv.Atoi(catIndexStr)
 			if err == nil {
@@ -56,11 +62,9 @@ func main() {
 					fmt.Println("Error saving cat data:", err)
 				}
 			}
-		}
-
-		err := indexTemplate.Execute(w, cats)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Redirect(w, r, r.URL.String(), http.StatusSeeOther)
+		default:
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}
 	})
 
