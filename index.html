@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cat Rank</title>
+</head>
+<body>
+    <h1>CAT RANK</h1>
+    <ul>
+        {{range $index, $cat := .}}
+        <li>
+            <h2>{{$cat.Name}}</h2>
+            <img src="{{$cat.ImageURL}}" alt="{{$cat.Name}}">
+            <form method="POST">
+                <input type="hidden" name="cat" value="{{$index}}">
+                <button type="submit">Vote</button>
+            </form>
+            <p>{{$cat.Votes}} votes</p>
+        </li>
+        {{end}}
+    </ul>
+</body>
+</html>
+
