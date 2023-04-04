@@ -34,7 +34,7 @@ var cats = []Cat{
 	},
 }
 
-var indexTemplate = template.Must(template.ParseFiles("index.html"))
+var indexTemplate = template.Must(template.ParseFiles("templates/index.html"))
 
 func main() {
 	// Load the cat data from the JSON file

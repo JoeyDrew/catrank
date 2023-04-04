@@ -1,0 +1,32 @@
+# fly.toml file generated for catrank on 2023-04-04T11:33:17-04:00
+
+app = "catrank"
+kill_timeout = 0
+primary_region = "iad"
+
+[build]
+  builder = "paketobuildpacks/builder:base"
+  buildpacks = ["gcr.io/paketo-buildpacks/go"]
+
+[env]
+  PORT = "8000"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8080
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+  [services.concurrency]
+    hard_limit = 25
+    soft_limit = 20
+
+  [[services.tcp_checks]]
+    interval = "10s"
+    timeout = "2s"
+    restart_limit = 0
