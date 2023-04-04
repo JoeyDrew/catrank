@@ -24,7 +24,7 @@ var cats = []Cat{
 		Name: "Walter",
 	},
 	{
-		Name: "Panpan",
+		Name: "Pan-Pan",
 	},
 	{
 		Name: "Busby",
