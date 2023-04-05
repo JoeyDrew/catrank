@@ -68,6 +68,11 @@ func main() {
 		}
 	})
 
+	// Serve CSS file
+	http.HandleFunc("/style.css", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "style.css")
+	})
+
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
 
