@@ -1,15 +1,18 @@
-# fly.toml file generated for catrank on 2023-04-04T12:12:28-04:00
+# fly.toml file generated for catrank on 2023-04-04T13:18:22-04:00
 
 app = "catrank"
 kill_timeout = 0
 primary_region = "iad"
 
+[build]
+  dockerfile = "Dockerfile"
+
 [env]
-  PORT = "8000"
+  PORT = "8080"
 
 [[services]]
   protocol = "tcp"
-  internal_port = 8000
+  internal_port = 8080
 
   [[services.ports]]
     port = 80
