@@ -1,4 +1,4 @@
-# fly.toml file generated for catrank on 2023-04-04T13:18:22-04:00
+# fly.toml file generated for catrank on 2023-04-08T12:50:41-04:00
 
 app = "catrank"
 kill_timeout = 0
@@ -9,6 +9,10 @@ primary_region = "iad"
 
 [env]
   PORT = "8080"
+
+[mounts]
+  source = "catrank_data"
+  destination = "/data"
 
 [[services]]
   protocol = "tcp"
