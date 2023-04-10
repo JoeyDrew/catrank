@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
@@ -20,30 +22,26 @@ type Cat struct {
 	Votes    int
 }
 
-var cats = []Cat{
-	{
-		Name: "Susanna",
-	},
-	{
-		Name: "Walter",
-	},
-	{
-		Name: "Pan-Pan",
-	},
-	{
-		Name: "Busby",
-	},
-	{
-		Name: "Keaton",
-	},
-}
+var (
+	//go:embed cats.json
+	initialCatsData []byte
 
-var indexTemplate = template.Must(template.ParseFiles("templates/index.html"))
+	indexTemplate = template.Must(template.ParseFiles("templates/index.html"))
+)
 
 func main() {
 	log.Print("info starting")
+
+	var cats []Cat
+	var err error
+
+	catsDataPath, ok := os.LookupEnv("CATS_DATA_PATH")
+	if !ok {
+		catsDataPath = "/data/cats.json"
+	}
+
 	// Load the cat data from the JSON file or exit
-	if err := loadCatData(); err != nil {
+	if cats, err = initCatData(catsDataPath); err != nil {
 		log.Fatalf("error loading cat data: %v", err)
 	}
 	log.Print("info cat data loaded")
@@ -69,7 +67,7 @@ func main() {
 			log.Printf("info vote for %s", cats[catIndex].Name)
 
 			// Save the updated cat data to the JSON file
-			if err = saveCatData(); err != nil {
+			if err = saveCatData(cats, catsDataPath); err != nil {
 				log.Printf("error saving cat data: %v", err)
 			}
 			log.Print("info cat data saved")
@@ -94,6 +92,7 @@ func main() {
 	// Start http server
 	srv := &http.Server{Addr: ":8080"}
 	go func() {
+		log.Print("serving on :8080")
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("error listen: %v", err)
 		}
@@ -112,26 +111,59 @@ func main() {
 	log.Print("info done")
 }
 
-func loadCatData() error {
-	data, err := os.ReadFile("cats.json")
+func initCatData(catsDataPath string) ([]Cat, error) {
+	cats, err := loadCatData(catsDataPath)
 	if err != nil {
-		return fmt.Errorf("failed to read cats json file: %w", err)
+		if errors.Is(err, os.ErrNotExist) {
+			if err = os.WriteFile(catsDataPath, initialCatsData, 0644); err != nil {
+				return nil, fmt.Errorf("failed to initialize cats data: %w", err)
+			}
+
+			// Try to load from the file system again. If it fails, there's probably something weird going
+			// on with the file system (e.g., we have write permission but not read permission)
+			if cats, err = loadCatData(catsDataPath); err != nil {
+				return nil, fmt.Errorf("failed to load cats data after initialization: %w", err)
+			}
+		} else {
+			return nil, fmt.Errorf("failed to load initial cats data: %w", err)
+		}
+	}
+
+	// Make sure we can actually write to the file as well
+	file, err := os.OpenFile(catsDataPath, os.O_WRONLY, 0)
+	if err != nil {
+		if os.IsPermission(err) {
+			return nil, fmt.Errorf("no permission to write to cats data path \"%s\": %w", catsDataPath, err)
+		}
+		return nil, fmt.Errorf("failed to check write permission to cats data path \"%s\": %w", catsDataPath, err)
+	}
+	file.Close()
+
+	return cats, nil
+}
+
+func loadCatData(catsDataPath string) ([]Cat, error) {
+	var cats []Cat
+
+	data, err := os.ReadFile(catsDataPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read cats json file: %w", err)
 	}
 
 	if err = json.Unmarshal(data, &cats); err != nil {
-		return fmt.Errorf("failed to unmarshal cats data: %w", err)
+		return nil, fmt.Errorf("failed to unmarshal cats data: %w", err)
 	}
 
-	return nil
+	return cats, nil
 }
 
-func saveCatData() error {
+func saveCatData(cats []Cat, catsDataPath string) error {
 	data, err := json.MarshalIndent(cats, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal cats json data: %w", err)
 	}
 
-	if err = os.WriteFile("cats.json", data, 0644); err != nil {
+	if err = os.WriteFile(catsDataPath, data, 0644); err != nil {
 		return fmt.Errorf("failed to save cats json file: %w", err)
 	}
 
