@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sort"
 	"strconv"
 	"syscall"
 	"time"
@@ -71,6 +72,11 @@ func main() {
 				log.Printf("error saving cat data: %v", err)
 			}
 			log.Print("info cat data saved")
+
+			// Sort cats
+			sort.Slice(cats, func(i, j int) bool {
+				return cats[i].Votes > cats[j].Votes
+			})
 
 			// Redirect to a regular GET request to display results and prevent browser from duplicating votes
 			http.Redirect(w, r, r.URL.String(), http.StatusSeeOther)
