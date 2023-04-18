@@ -67,16 +67,16 @@ func main() {
 			cats[catIndex].Votes++
 			log.Printf("info vote for %s", cats[catIndex].Name)
 
+			// Sort cats prior to saving
+			sort.Slice(cats, func(i, j int) bool {
+				return cats[i].Votes > cats[j].Votes
+			})
+
 			// Save the updated cat data to the JSON file
 			if err = saveCatData(cats, catsDataPath); err != nil {
 				log.Printf("error saving cat data: %v", err)
 			}
 			log.Print("info cat data saved")
-
-			// Sort cats
-			sort.Slice(cats, func(i, j int) bool {
-				return cats[i].Votes > cats[j].Votes
-			})
 
 			// Redirect to a regular GET request to display results and prevent browser from duplicating votes
 			http.Redirect(w, r, r.URL.String(), http.StatusSeeOther)
