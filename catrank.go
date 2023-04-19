@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sort"
 	"strconv"
 	"syscall"
 	"time"
@@ -65,6 +66,11 @@ func main() {
 
 			cats[catIndex].Votes++
 			log.Printf("info vote for %s", cats[catIndex].Name)
+
+			// Sort cats prior to saving
+			sort.Slice(cats, func(i, j int) bool {
+				return cats[i].Votes > cats[j].Votes
+			})
 
 			// Save the updated cat data to the JSON file
 			if err = saveCatData(cats, catsDataPath); err != nil {
