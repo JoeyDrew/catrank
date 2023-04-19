@@ -1,27 +1,22 @@
 [
   {
-    "Name": "Keaton",
-    "ImageURL": "",
-    "Votes": 14
-  },
-  {
     "Name": "Susanna",
-    "ImageURL": "",
-    "Votes": 12
-  },
-  {
-    "Name": "Pan-Pan",
-    "ImageURL": "",
-    "Votes": 9
+    "Votes": 0
   },
   {
     "Name": "Walter",
-    "ImageURL": "",
-    "Votes": 5
+    "Votes": 0
+  },
+  {
+    "Name": "Panpan",
+    "Votes": 0
   },
   {
     "Name": "Busby",
-    "ImageURL": "",
-    "Votes": 6
+    "Votes": 0
+  },
+  {
+    "Name": "Keaton",
+    "Votes": 0
   }
 ]
