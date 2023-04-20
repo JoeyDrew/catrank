@@ -6,19 +6,19 @@
 </head>
 <body>
     <h1>CAT RANK</h1>
-    <ul>
-        {{range $index, $cat := .}}
-        <li>
-            <h2>{{$cat.Name}}</h2>
-            <img src="{{$cat.ImageURL}}" alt="{{$cat.Name}}">
-            <form method="POST">
-                <input type="hidden" name="cat" value="{{$index}}">
-                <button type="submit">Vote</button>
-            </form>
-            <p>{{$cat.Votes}} votes</p>
-        </li>
-        {{end}}
-    </ul>
+    <div class="cat-container">
+		{{range $index, $cat := .}}
+		<div class="cat-item">
+            <p class="votes">{{$cat.Votes}}</p>
+			<img src="{{$cat.ImageURL}}" alt="{{$cat.Name}}">
+			<h2>{{$cat.Name}}</h2>
+			<form method="POST" action="/">
+				<input type="hidden" name="cat" value="{{$index}}">
+				<button type="submit">Vote</button>
+			</form>
+		</div>
+		{{end}}
+	</div>
 </body>
 </html>
 
