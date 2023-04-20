@@ -1,0 +1,10 @@
+version: '3'
+services:
+  catrank:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - "./cats.json:/data/cats.json"
+    environment:
+      - CATS_DATA_PATH=/data/cats.json
