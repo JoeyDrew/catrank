@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -35,6 +36,8 @@ func main() {
 
 	var cats []Cat
 	var err error
+
+	go dateCheck()
 
 	catsDataPath, ok := os.LookupEnv("CATS_DATA_PATH")
 	if !ok {
@@ -174,4 +177,66 @@ func saveCatData(cats []Cat, catsDataPath string) error {
 	}
 
 	return nil
+}
+
+func resetVotes() error {
+	// Read the JSON file and parse its contents
+	file, err := ioutil.ReadFile("cats.json")
+	if err != nil {
+		return err
+	}
+
+	var cats []Cat
+	err = json.Unmarshal(file, &cats)
+	if err != nil {
+		return err
+	}
+
+	// Reset the vote counts to zero for each cat
+	for i := range cats {
+		cats[i].Votes = 0
+	}
+
+	// Encode the updated cats data back to JSON
+	data, err := json.MarshalIndent(cats, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	// Write the updated JSON data back to the file
+	err = ioutil.WriteFile("cats.json", data, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func dateCheck() {
+	// Define the time to check for vote reset (beginning of each month)
+	resetTime := time.Date(time.Now().Year(), time.Now().Month()+1, 1, 0, 0, 0, 0, time.Local)
+
+	// Calculate the duration until the next reset time
+	duration := resetTime.Sub(time.Now())
+
+	// Create a timer to trigger the resetVotes function
+	timer := time.NewTimer(duration)
+
+	// Start an infinite loop to periodically check and reset the votes
+	for {
+		<-timer.C
+
+		// Reset the votes
+		err := resetVotes()
+		if err != nil {
+			log.Println("Failed to reset votes:", err)
+		}
+
+		// Recalculate the next reset time
+		resetTime = time.Date(resetTime.Year(), resetTime.Month()+1, 1, 0, 0, 0, 0, time.Local)
+		duration = resetTime.Sub(time.Now())
+
+		// Reset the timer for the next reset
+		timer.Reset(duration)
+	}
 }
